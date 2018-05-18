@@ -1,0 +1,51 @@
+CREATE TABLE [iot] (
+    Dt datetime,
+    MsgType nvarchar(max),
+    DeviceName  nvarchar(max),
+    Potentiometer1 float,
+    Potentiometer2 float,
+    Light float,
+    ADC3 float,
+    ADC4 float,
+    ADC5 float,
+    ADC6 float,
+    ADC7 float,
+    Altitude float,
+    Pressure float,
+    Temperature float,
+    Latitude float,
+    Longitude float
+);
+
+
+WITH iotFilter AS (
+    SELECT MsgType, DeviceName, Dt, Potentiometer1 
+    FROM iot TIMESTAMP BY Dt  
+) 
+SELECT iot.MsgType, iot.DeviceName, iotFilter.Potentiometer1, iot.Potentiometer2,iotFilter.Dt AS iotFilterDt ,iot.Dt  INTO filterjoin FROM iot TIMESTAMP BY Dt
+JOIN iotFilter ON iotFilter.MsgType = iot.MsgType AND iotFilter.DeviceName = iot.DeviceName AND ABS(iot.Potentiometer2 - iotFilter.Potentiometer1)<1
+AND DATEDIFF(minute,iot,iotFilter) BETWEEN 0 AND 2;
+
+
+SELECT MsgType, DeviceName, min(Dt) as minDT,count(*) as cnt 
+,AVG(Potentiometer1) as avgPotentiometer1 
+,AVG(Potentiometer2) as avgPotentiometer2 
+,AVG(Light) as avgLight
+,STDEV(Altitude) as stdevAltitude
+,VAR(Pressure) as varPressure
+,AVG(Temperature) as avgTemperature
+INTO [aggregate] FROM [iot] TIMESTAMP BY DT GROUP BY MsgType, DeviceName, TumblingWindow(minute,10) ;
+
+SELECT MsgType, DeviceName, min(Dt) as minDT,count(*) as cnt 
+,AVG(Potentiometer1) as avgPotentiometer1 
+,AVG(Potentiometer2) as avgPotentiometer2 
+,AVG(Light) as avgLight
+,STDEV(Altitude) as stdevAltitude
+,VAR(Pressure) as varPressure
+,AVG(Temperature) as avgTemperature
+INTO [sql] FROM [iot] TIMESTAMP BY DT GROUP BY MsgType, DeviceName, TumblingWindow(minute,10) ;
+
+
+SELECT * INTO [rawdata] FROM [iot] TIMESTAMP BY DT;
+OR (maks 5 independents readers):
+SELECT * INTO [eh01] FROM [iot] TIMESTAMP BY DT WHERE ADC3 >100;

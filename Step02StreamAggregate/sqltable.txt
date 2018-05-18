@@ -1,0 +1,13 @@
+CREATE TABLE [dbo].[tblInfoshare2018](
+	[MsgType] [nvarchar](max) NULL,
+	[DeviceName] [nvarchar](max) NULL,
+	[minDT] [datetime] NULL,
+	[cnt] [int] NULL,
+	[avgPotentiometer1] [float] NULL,
+	[avgPotentiometer2] [float] NULL,
+	[avgLight] [float] NULL,
+	[stdevAltitude] [float] NULL,
+	[varPressure] [float] NULL,
+	[avgTemperature] [float] NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
